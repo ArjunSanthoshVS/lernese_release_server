@@ -84,11 +84,7 @@ exports.getUpcomingClasses = catchAsync(async (req, res) => {
 
     // Filter again after status updates
     const upcomingClasses = classes.filter(c => c.status === 'upcoming');
-<<<<<<< HEAD
-
-=======
     
->>>>>>> 3897c12830c899d2bee518b644bdf36022bc0874
     // Translate classes if needed
     const translatedClasses = await translateClasses(upcomingClasses, language);
 
@@ -242,11 +238,7 @@ exports.getChatMessages = async (req, res) => {
         const messages = await ChatMessage.find({ classId })
             .sort({ timestamp: 1 })
             .limit(100);
-<<<<<<< HEAD
-
-=======
         
->>>>>>> 3897c12830c899d2bee518b644bdf36022bc0874
         // Format messages without translation
         const formattedMessages = messages.map(msg => ({
             id: msg._id.toString(),
@@ -277,11 +269,7 @@ exports.saveMessage = async (messageData) => {
 
         const message = new ChatMessage(messageData);
         const savedMessage = await message.save();
-<<<<<<< HEAD
-
-=======
         
->>>>>>> 3897c12830c899d2bee518b644bdf36022bc0874
         // Format the saved message
         const formattedMessage = {
             id: savedMessage._id.toString(),

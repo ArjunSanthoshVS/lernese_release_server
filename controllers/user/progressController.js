@@ -11,11 +11,6 @@ const getProgressData = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-<<<<<<< HEAD
-        console.log(language);
-=======
-
->>>>>>> 3897c12830c899d2bee518b644bdf36022bc0874
         // Get all courses data with translations if needed
         const courses = await Promise.all(user.courses.map(async course => ({
             id: course.course._id,

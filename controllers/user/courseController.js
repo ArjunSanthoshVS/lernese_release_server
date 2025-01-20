@@ -174,10 +174,6 @@ exports.getCoursesByLevel = async (req, res) => {
       coursesToReturn = courses.map(course => course.toObject());
     }
 
-<<<<<<< HEAD
-    console.dir(coursesToReturn, { depth: null });
-=======
->>>>>>> 3897c12830c899d2bee518b644bdf36022bc0874
     res.status(200).json({
       status: 'success',
       data: { courses: coursesToReturn }
