@@ -6,7 +6,7 @@ const getDefaultAchievements = require('../../utils/defaultAchievements');
 const register = async (req, res) => {
     try {
         console.log('Registering user...', req.body);
-        const { email, studyLevel } = req.body;
+        const { email, studyLevel, nativeLanguage } = req.body;
 
         // Check if user already exists
         const existingUser = await User.findOne({ email });
@@ -19,11 +19,18 @@ const register = async (req, res) => {
         // Get default achievements based on study level
         const defaultAchievements = getDefaultAchievements(studyLevel || 'N5');
 
-        // Create new user with default achievements
+        // Set interface language based on native language
+        let interfaceLanguage = 'en';
+        if (nativeLanguage && nativeLanguage.toLowerCase() === 'hi') {
+            interfaceLanguage = 'hi';
+        }
+
+        // Create new user with default achievements and interface language
         const user = new User({
             ...req.body,
             studyLevel: studyLevel || 'N5',
-            allAchievements: defaultAchievements
+            allAchievements: defaultAchievements,
+            interfaceLanguage
         });
 
         await user.save();
@@ -43,7 +50,8 @@ const register = async (req, res) => {
                 fullName: user.fullName,
                 email: user.email,
                 nativeLanguage: user.nativeLanguage,
-                studyLevel: user.studyLevel
+                studyLevel: user.studyLevel,
+                interfaceLanguage: user.interfaceLanguage
             }
         });
     } catch (error) {
@@ -102,4 +110,4 @@ const login = async (req, res) => {
 module.exports = {
     register,
     login
-}; 
+};

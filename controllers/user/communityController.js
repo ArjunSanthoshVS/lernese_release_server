@@ -118,16 +118,21 @@ exports.getForumPostById = async (req, res) => {
             .populate('comments.user', 'fullName email')
             .populate('comments.replies.user', 'fullName email')
             .populate('comments.likes')
-            .populate('likes', 'fullName email');
+            .populate('likes', 'fullName email')
+            .populate('viewedBy');
 
         if (!post) {
             return res.status(404).json({ message: 'Forum post not found' });
         }
 
-        // Only increment view if the query param is true or not provided
+        // Only increment view if the user hasn't viewed this post before
         const shouldIncrementView = req.query.incrementView !== 'false';
-        if (shouldIncrementView) {
+        const userId = req.user.userId;
+        const hasViewed = post.viewedBy.some(viewerId => viewerId.equals(userId));
+        
+        if (shouldIncrementView && !hasViewed) {
             post.views += 1;
+            post.viewedBy.push(userId);
             await post.save();
         }
 
@@ -804,4 +809,3 @@ exports.toggleReplyLike = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
-

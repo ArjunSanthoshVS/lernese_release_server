@@ -111,6 +111,10 @@ const forumPostSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  viewedBy: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }],
   status: {
     type: String,
     enum: ['active', 'deleted'],
@@ -128,4 +132,4 @@ const forumPostSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('ForumPost', forumPostSchema); 
+module.exports = mongoose.model('ForumPost', forumPostSchema);
