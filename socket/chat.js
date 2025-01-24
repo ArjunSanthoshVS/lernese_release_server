@@ -2,6 +2,8 @@ const socketIO = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 const classController = require('../controllers/user/classController');
 const { saveAudioFile } = require('../utils/fileUpload');
+const communityController = require('../controllers/user/communityController');
+const StudyGroupMessage = require('../models/studygroupmessage.model');
 
 let io;
 const connectedUsers = new Map();
@@ -258,20 +260,59 @@ module.exports = {
             // Study Group Message Handler
             socket.on('study_group_message', async (messageData) => {
                 try {
-                    const { studyGroupId, content, sender } = messageData;
+                    const { studyGroupId, content, sender, type = 'text' } = messageData;
+                    
+                    let finalContent = content;
+                    // If it's an audio message, save the file and get the URL
+                    if (type === 'audio') {
+                        finalContent = saveAudioFile(content, sender._id);
+                        console.log('Audio saved with URL:', finalContent);
+                    }
                     
                     const message = {
                         id: uuidv4(),
-                        content,
+                        content: finalContent,
                         sender,
+                        type,
                         studyGroupId,
                         createdAt: new Date().toISOString()
                     };
                     
-                    console.log('Broadcasting study group message:', message);
+                    // Save message to database
+                    const newMessage = new StudyGroupMessage({
+                        studyGroupId,
+                        content: finalContent,
+                        type,
+                        sender: sender._id
+                    });
+
+                    const savedMessage = await newMessage.save();
+                    const populatedMessage = await StudyGroupMessage.findById(savedMessage._id)
+                        .populate({
+                            path: 'sender',
+                            select: '_id name email',
+                            model: 'User'
+                        });
+
+                    // Format the message to match the API response format
+                    const formattedMessage = {
+                        _id: populatedMessage._id,
+                        content: populatedMessage.content,
+                        type: populatedMessage.type || 'text',
+                        studyGroupId: populatedMessage.studyGroupId,
+                        createdAt: populatedMessage.createdAt,
+                        sender: {
+                            _id: populatedMessage.sender?._id,
+                            name: populatedMessage.sender?.name || 
+                                (populatedMessage.sender?.email ? populatedMessage.sender.email.split('@')[0] : 'Unknown User'),
+                            email: populatedMessage.sender?.email
+                        }
+                    };
+                    
+                    console.log('Broadcasting study group message:', formattedMessage);
                     
                     // Broadcast to all users in the study group
-                    io.to(`study_group_${studyGroupId}`).emit('study_group_message', message);
+                    io.to(`study_group_${studyGroupId}`).emit('study_group_message', formattedMessage);
                 } catch (error) {
                     console.error('Error handling study group message:', error);
                     socket.emit('error', { message: 'Failed to send message to study group' });

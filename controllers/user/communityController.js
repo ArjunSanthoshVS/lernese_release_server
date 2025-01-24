@@ -49,8 +49,8 @@ exports.getAllForumPosts = async (req, res) => {
 
             // Only translate if language is not English
             if (language !== 'en') {
-                postObj.title = await translationService.translate(postObj.title, language);
-                postObj.description = await translationService.translate(postObj.description, language);
+                // postObj.title = await translationService.translate(postObj.title, language);
+                // postObj.description = await translationService.translate(postObj.description, language);
                 postObj.category = await translationService.translate(postObj.category, language);
 
                 // Translate comments if they exist
@@ -141,18 +141,18 @@ exports.getForumPostById = async (req, res) => {
 
         // Only translate if language is not English
         if (language !== 'en') {
-            try {
-                const [translatedTitle, translatedDescription] = await Promise.all([
-                    translationService.translate(postObject.title, language),
-                    translationService.translate(postObject.description, language)
-                ]);
+            // try {
+            //     const [translatedTitle, translatedDescription] = await Promise.all([
+            //         translationService.translate(postObject.title, language),
+            //         translationService.translate(postObject.description, language)
+            //     ]);
                 
-                postObject.title = translatedTitle;
-                postObject.description = translatedDescription;
-            } catch (translationError) {
-                console.error('Translation error:', translationError);
-                // Continue with original text if translation fails
-            }
+            //     postObject.title = translatedTitle;
+            //     postObject.description = translatedDescription;
+            // } catch (translationError) {
+            //     console.error('Translation error:', translationError);
+            //     // Continue with original text if translation fails
+            // }
         }
 
         // Add a field to indicate if the current user has liked the post
@@ -526,8 +526,8 @@ exports.getAllStudyGroups = async (req, res) => {
 
             // Only translate if language is not English
             if (language !== 'en') {
-                groupObj.name = await translationService.translate(groupObj.name, language);
-                groupObj.description = await translationService.translate(groupObj.description, language);
+                // groupObj.name = await translationService.translate(groupObj.name, language);
+                // groupObj.description = await translationService.translate(groupObj.description, language);
                 groupObj.category = await translationService.translate(groupObj.category, language);
                 
                 if (groupObj.nextMeeting) {
@@ -640,8 +640,8 @@ exports.getMyStudyGroups = async (req, res) => {
 
             // Only translate if language is not English
             if (language !== 'en') {
-                groupObj.name = await translationService.translate(groupObj.name, language);
-                groupObj.description = await translationService.translate(groupObj.description, language);
+                // groupObj.name = await translationService.translate(groupObj.name, language);
+                // groupObj.description = await translationService.translate(groupObj.description, language);
                 groupObj.category = await translationService.translate(groupObj.category, language);
                 
                 if (groupObj.nextMeeting) {
@@ -700,6 +700,7 @@ exports.getStudyGroupMessages = async (req, res) => {
             return {
                 _id: msg._id,
                 content: msg.content,
+                type: msg.type || 'text',
                 studyGroupId: msg.studyGroupId,
                 createdAt: msg.createdAt,
                 sender: {
@@ -721,12 +722,13 @@ exports.getStudyGroupMessages = async (req, res) => {
 exports.sendStudyGroupMessage = async (req, res) => {
     try {
         const { id: studyGroupId } = req.params;
-        const { content } = req.body;
+        const { content, type = 'text' } = req.body;
         const sender = req.user.userId;
 
         const message = new StudyGroupMessage({
             studyGroupId,
             content,
+            type,
             sender
         });
 
@@ -746,6 +748,7 @@ exports.sendStudyGroupMessage = async (req, res) => {
         const formattedMessage = {
             _id: populatedMessage._id,
             content: populatedMessage.content,
+            type: populatedMessage.type || 'text',
             studyGroupId: populatedMessage.studyGroupId,
             createdAt: populatedMessage.createdAt,
             sender: {
