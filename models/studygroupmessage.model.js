@@ -26,4 +26,4 @@ const studyGroupMessageSchema = new mongoose.Schema({
     }
 });
 
-module.exports = mongoose.model('StudyGroupMessage', studyGroupMessageSchema); 
+module.exports = mongoose.model('StudyGroupMessage', studyGroupMessageSchema);

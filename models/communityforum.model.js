@@ -132,4 +132,4 @@ const forumPostSchema = new mongoose.Schema({
   timestamps: true
 });
 
-module.exports = mongoose.model('ForumPost', forumPostSchema); 
+module.exports = mongoose.model('ForumPost', forumPostSchema);
