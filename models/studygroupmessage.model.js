@@ -10,6 +10,11 @@ const studyGroupMessageSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    type: {
+        type: String,
+        enum: ['text', 'audio'],
+        default: 'text'
+    },
     sender: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

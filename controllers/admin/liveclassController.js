@@ -5,9 +5,26 @@ const User = require('../../models/user.model');
 const categorizeClasses = async (classes) => {
   const now = new Date();
   const result = { upcoming: [], ongoing: [], previous: [] };
-  
+
   for (const classItem of classes) {
+    // Skip cancelled classes
     if (classItem.status === 'cancelled') {
+      continue;
+    }
+
+    // If class is completed or has a recording, put it in previous
+    if (classItem.status === 'completed' || classItem.recording) {
+      result.previous.push(classItem);
+      
+      // Ensure status is set to completed if it has a recording
+      if (classItem.recording && classItem.status !== 'completed') {
+        try {
+          await Class.findByIdAndUpdate(classItem._id, { status: 'completed' });
+          classItem.status = 'completed';
+        } catch (error) {
+          console.error(`Error updating class status for ${classItem._id}:`, error);
+        }
+      }
       continue;
     }
 
@@ -71,7 +88,7 @@ exports.getAllClasses = async (req, res) => {
     const categorizedClasses = await categorizeClasses(classes);
 
     // Transform the data to match frontend expectations with null checks
-    const transformClasses = (classList) => 
+    const transformClasses = (classList) =>
       classList.map(c => {
         if (!c) return null;
         const classObj = c.toObject();
@@ -104,9 +121,9 @@ exports.getAllClasses = async (req, res) => {
     res.status(200).json(transformedClasses);
   } catch (error) {
     console.error('Error fetching classes:', error);
-    res.status(500).json({ 
-      message: 'Error fetching classes', 
-      error: error.message 
+    res.status(500).json({
+      message: 'Error fetching classes',
+      error: error.message
     });
   }
 };
@@ -293,4 +310,89 @@ exports.getClassAnalytics = async (req, res) => {
     console.error('Error fetching class analytics:', error);
     res.status(500).json({ message: 'Error fetching class analytics', error: error.message });
   }
-}; 
+};
+
+/**
+ * Upload class recording
+ * @param {Object} req - Request object
+ * @param {Object} res - Response object
+ */
+exports.uploadRecording = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'No recording file provided'
+      });
+    }
+
+    const { classId, hostId, timestamp } = req.body;
+
+    if (!classId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Class ID is required'
+      });
+    }
+
+    const recordingPath = `/uploads/recordings/${req.file.filename}`;
+
+    // Combine all updates into a single atomic operation
+    const updatedClass = await Class.findByIdAndUpdate(
+      classId,
+      {
+        $set: {
+          status: 'completed',
+          isActive: false,
+          recording: {
+            fileName: req.file.filename,
+            path: recordingPath,
+            uploadedAt: timestamp || new Date(),
+            uploadedBy: hostId
+          }
+        },
+        $push: {
+          materials: {
+            title: 'Class Recording',
+            url: recordingPath,
+            type: 'video',
+            addedAt: new Date()
+          }
+        }
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedClass) {
+      return res.status(404).json({
+        success: false,
+        message: 'Class not found'
+      });
+    }
+
+    // Double-check the update was successful
+    console.log('Updated class status:', updatedClass.status);
+
+    res.status(200).json({
+      success: true,
+      message: 'Recording uploaded and class completed successfully',
+      data: {
+        fileName: req.file.filename,
+        path: recordingPath,
+        status: updatedClass.status,
+        materials: updatedClass.materials
+      }
+    });
+
+  } catch (error) {
+    console.error('Error uploading recording:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to upload recording',
+      error: error.message
+    });
+  }
+};
+
+// Export all controller functions
+module.exports = exports; 

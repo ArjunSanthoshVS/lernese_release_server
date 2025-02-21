@@ -25,8 +25,8 @@ const storage = multer.diskStorage({
             mimetype: file.mimetype
         });
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        // Get original file extension or default to .m4a
-        const ext = path.extname(file.originalname) || '.m4a';
+        // Get original file extension or default to .wav
+        const ext = path.extname(file.originalname) || '.wav';
         const filename = `${uniqueSuffix}${ext}`;
         console.log('Generated filename:', filename);
         cb(null, filename);

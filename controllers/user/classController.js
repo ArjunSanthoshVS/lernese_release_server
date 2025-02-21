@@ -33,15 +33,21 @@ const translateClasses = async (classes, language) => {
 
 // Helper function to update class status based on current time
 const updateClassStatus = async (classDoc) => {
+    // If class is completed or has recording, don't change the status
+    if (classDoc.status === 'completed' || classDoc.recording) {
+        return { statusChanged: false, newStatus: 'completed' };
+    }
+
+    // If class is cancelled, don't change the status
+    if (classDoc.status === 'cancelled') {
+        return { statusChanged: false, newStatus: classDoc.status };
+    }
+
     const now = new Date();
     const startTime = new Date(classDoc.startTime);
     const endTime = new Date(classDoc.endTime);
     let statusChanged = false;
     let newStatus = classDoc.status;
-
-    if (classDoc.status === 'cancelled') {
-        return { statusChanged: false, newStatus };
-    }
 
     if (startTime > now && classDoc.status !== 'upcoming') {
         newStatus = 'upcoming';
@@ -127,9 +133,22 @@ exports.getOngoingClasses = catchAsync(async (req, res) => {
 exports.getPreviousClasses = catchAsync(async (req, res) => {
     const language = req.query.language || 'en';
     const now = new Date();
+    
+    // Find classes that are either:
+    // 1. Past their end time
+    // 2. Marked as completed
+    // 3. Have recordings
     const classes = await Class.find({
-        endTime: { $lt: now },
-        status: { $ne: 'cancelled' }
+        $and: [
+            { status: { $ne: 'cancelled' } },
+            {
+                $or: [
+                    { endTime: { $lt: now } },
+                    { status: 'completed' },
+                    { recording: { $exists: true } }
+                ]
+            }
+        ]
     })
         .populate('hostId', 'name email')
         .sort({ startTime: -1 });
@@ -139,8 +158,10 @@ exports.getPreviousClasses = catchAsync(async (req, res) => {
         await updateClassStatus(classDoc);
     }
 
-    // Filter again after status updates
-    const previousClasses = classes.filter(c => c.status === 'completed');
+    // Filter to include only completed classes and classes with recordings
+    const previousClasses = classes.filter(c => 
+        c.status === 'completed' || c.recording
+    );
 
     // Translate classes if needed
     const translatedClasses = await translateClasses(previousClasses, language);
