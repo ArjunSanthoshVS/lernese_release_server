@@ -20,7 +20,6 @@ const isToday = (date) => {
 // Check and update daily access streak
 exports.checkDailyStreak = async (req, res) => {
     try {
-        console.log('Checking daily streak');
         const user = await User.findById(req.user.userId);
         const today = new Date();
         today.setHours(0, 0, 0, 0);
@@ -59,7 +58,6 @@ exports.checkDailyStreak = async (req, res) => {
             achievement => achievement.achievementId === 'n5_streak'
         );
 
-        console.log('Streak achievement found', streakAchievement);
 
         if (!streakAchievement) {
             // If streak achievement doesn't exist, create it
@@ -81,7 +79,6 @@ exports.checkDailyStreak = async (req, res) => {
                 });
             }
         } else {
-            console.log('Streak achievement found', streakAchievement);
             // Update existing streak achievement
             streakAchievement.currentProgress = (user.streak / 30) * 100;
             

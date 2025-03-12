@@ -208,7 +208,6 @@ exports.createClass = catchAsync(async (req, res) => {
 exports.joinClass = catchAsync(async (req, res) => {
     const classId = req.params.id;
     const userId = req.user.userId;
-    console.log(classId, userId);
     const classDoc = await Class.findById(classId);
     if (!classDoc) {
         throw new AppError('Class not found', 404);

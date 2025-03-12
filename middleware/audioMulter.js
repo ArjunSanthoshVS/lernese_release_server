@@ -10,43 +10,23 @@ const storage = multer.diskStorage({
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
-        console.log('Upload path:', uploadPath);
-        console.log('File to be saved:', {
-            fieldname: file.fieldname,
-            originalname: file.originalname,
-            mimetype: file.mimetype
-        });
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        console.log('Processing file for filename:', {
-            fieldname: file.fieldname,
-            originalname: file.originalname,
-            mimetype: file.mimetype
-        });
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         // Get original file extension or default to .wav
         const ext = path.extname(file.originalname) || '.wav';
         const filename = `${uniqueSuffix}${ext}`;
-        console.log('Generated filename:', filename);
         cb(null, filename);
     }
 });
 
 // File filter for audio files
 const fileFilter = (req, file, cb) => {
-    console.log('Received file in filter:', {
-        fieldname: file.fieldname,
-        originalname: file.originalname,
-        encoding: file.encoding,
-        mimetype: file.mimetype
-    });
-
     // Accept any audio file or octet-stream (some devices send this)
     if (file.mimetype.startsWith('audio/') || 
         file.mimetype === 'application/octet-stream' ||
         file.fieldname === 'audio') {  // Also accept if the field name is 'audio'
-        console.log('File type accepted:', file.mimetype);
         cb(null, true);
     } else {
         console.error('Invalid file type:', file.mimetype);
@@ -66,11 +46,6 @@ const multerInstance = multer({
 
 // Wrap multer middleware to add error handling
 const audioMulter = (req, res, next) => {
-    console.log('=== Processing Audio Upload ===');
-    console.log('Content-Type:', req.headers['content-type']);
-    console.log('Content-Length:', req.headers['content-length']);
-    console.log('Available fields:', req.body);
-
     // Use .any() to see what fields are coming in
     multerInstance.any()(req, res, function(err) {
         if (err instanceof multer.MulterError) {
@@ -93,11 +68,6 @@ const audioMulter = (req, res, next) => {
             });
         }
         
-        console.log('After multer processing:');
-        console.log('Files:', req.files);
-        console.log('File:', req.file);
-        console.log('Body:', req.body);
-
         // If we have files, move the first audio file to req.file
         if (req.files && req.files.length > 0) {
             const audioFile = req.files.find(f => f.fieldname === 'audio');

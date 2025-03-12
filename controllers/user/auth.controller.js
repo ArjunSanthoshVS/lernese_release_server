@@ -5,7 +5,6 @@ const getDefaultAchievements = require('../../utils/defaultAchievements');
 
 const register = async (req, res) => {
     try {
-        console.log('Registering user...', req.body);
         const { email, studyLevel, nativeLanguage } = req.body;
 
         // Check if user already exists

@@ -15,10 +15,6 @@ router.post('/forum/posts/:id/like', verifyToken, communityController.toggleLike
 router.post('/forum/posts/:id/comment', 
     verifyToken,
     (req, res, next) => {
-        console.log('=== Starting comment upload ===');
-        console.log('Headers:', JSON.stringify(req.headers, null, 2));
-        console.log('Raw body:', req.body);
-        
         // Log the raw request to see what's coming in
         let data = '';
         req.on('data', chunk => {

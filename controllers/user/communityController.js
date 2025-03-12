@@ -227,16 +227,10 @@ exports.toggleLikeForumPost = async (req, res) => {
 
 exports.addComment = async (req, res) => {
     try {
-        console.log('Request headers:', req.headers);
-        console.log('Request body:', req.body);
-        console.log('Request file:', req.file);
-        console.log('Request files:', req.files);
-
         const { content, contentType } = req.body;
         let audioUrl = null;
 
         if (!content || !contentType || !['text', 'voice'].includes(contentType)) {
-            console.log('Invalid data:', { content, contentType });
             return res.status(400).json({ 
                 success: false,
                 error: {
@@ -249,7 +243,6 @@ exports.addComment = async (req, res) => {
         // Handle voice comment upload
         if (contentType === 'voice') {
             if (!req.file) {
-                console.log('Voice comment missing file');
                 return res.status(400).json({ 
                     success: false,
                     error: {
@@ -258,7 +251,6 @@ exports.addComment = async (req, res) => {
                     }
                 });
             }
-            console.log('Processing voice file:', req.file);
             audioUrl = `${req.file.filename}`;
         }
 
@@ -334,7 +326,6 @@ exports.addReply = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        console.log(id);
         const post = await ForumPost.findById(id);
         if (!post) {
             return res.status(404).json({ message: 'Forum post not found' });
@@ -520,8 +511,6 @@ exports.getAllStudyGroups = async (req, res) => {
             .select('-resources')
             .sort({ createdAt: -1 });
 
-        console.log(studyGroups);
-
         const formattedGroups = await Promise.all(studyGroups.map(async group => {
             const groupObj = group.toObject();
             groupObj.memberCount = group.members.length;
@@ -539,8 +528,6 @@ exports.getAllStudyGroups = async (req, res) => {
 
             return groupObj;
         }));
-
-        console.log(formattedGroups);
 
         res.status(200).json({ success: true, data: formattedGroups });
     } catch (error) {

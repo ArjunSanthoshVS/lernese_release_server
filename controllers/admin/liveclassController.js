@@ -285,7 +285,6 @@ exports.cancelClass = async (req, res) => {
 // Get class analytics
 exports.getClassAnalytics = async (req, res) => {
   try {
-    console.log('Getting class analytics for:', req.params.id);
     const classData = await Class.findById(req.params.id)
       .populate('hostId', 'name email')
       .populate('participants', 'fullName email');
@@ -369,9 +368,6 @@ exports.uploadRecording = async (req, res) => {
         message: 'Class not found'
       });
     }
-
-    // Double-check the update was successful
-    console.log('Updated class status:', updatedClass.status);
 
     res.status(200).json({
       success: true,
