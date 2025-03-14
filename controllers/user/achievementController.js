@@ -62,6 +62,28 @@ const calculateProgress = async (user, achievement) => {
     }
 };
 
+// Helper function for translating achievement content
+const translateAchievementContent = async (content, language) => {
+    try {
+        if (language === 'en') return content;
+        
+        const [translatedTitle, translatedDescription] = await Promise.all([
+            translationService.translate(content.title, language),
+            translationService.translate(content.description, language)
+        ]);
+        
+        return {
+            ...content,
+            title: translatedTitle,
+            description: translatedDescription
+        };
+    } catch (error) {
+        console.error('Translation error:', error);
+        // Fallback to original content if translation fails
+        return content;
+    }
+};
+
 // Get user's achievements with progress
 const getUserAchievements = async (req, res) => {
     try {
@@ -84,21 +106,14 @@ const getUserAchievements = async (req, res) => {
             allAchievementTemplates.map(async (achievement) => {
                 const baseAchievement = achievement.toObject();
                 
-                // Only translate if language is not English
-                if (language !== 'en') {
-                    const [translatedTitle, translatedDescription] = await Promise.all([
-                        translationService.translate(baseAchievement.title, language),
-                        translationService.translate(baseAchievement.description, language)
-                    ]);
-                    baseAchievement.title = translatedTitle;
-                    baseAchievement.description = translatedDescription;
-                }
+                // Translate achievement content
+                const translatedAchievement = await translateAchievementContent(baseAchievement, language);
 
                 // First check in recentAchievements
                 const recentProgress = user.recentAchievements.find(a => a.achievementId === achievement.id);
                 if (recentProgress) {
                     return {
-                        ...baseAchievement,
+                        ...translatedAchievement,
                         currentProgress: recentProgress.currentProgress,
                         isCompleted: recentProgress.isCompleted,
                         completedAt: recentProgress.completedAt
@@ -109,7 +124,7 @@ const getUserAchievements = async (req, res) => {
                 const userProgress = user.allAchievements.find(a => a.achievementId === achievement.id);
                 if (userProgress) {
                     return {
-                        ...baseAchievement,
+                        ...translatedAchievement,
                         currentProgress: userProgress.currentProgress,
                         isCompleted: userProgress.isCompleted,
                         completedAt: userProgress.completedAt
@@ -119,7 +134,7 @@ const getUserAchievements = async (req, res) => {
                 // If not found in either, calculate progress
                 const progress = await calculateProgress(user, achievement);
                 return {
-                    ...baseAchievement,
+                    ...translatedAchievement,
                     currentProgress: progress,
                     isCompleted: progress === 100,
                     completedAt: progress === 100 ? new Date() : null
@@ -146,18 +161,11 @@ const getUserAchievements = async (req, res) => {
 
                 const achievementObj = baseAchievement.toObject();
                 
-                // Only translate if language is not English
-                if (language !== 'en') {
-                    const [translatedTitle, translatedDescription] = await Promise.all([
-                        translationService.translate(achievementObj.title, language),
-                        translationService.translate(achievementObj.description, language)
-                    ]);
-                    achievementObj.title = translatedTitle;
-                    achievementObj.description = translatedDescription;
-                }
+                // Translate achievement content
+                const translatedAchievement = await translateAchievementContent(achievementObj, language);
 
                 return {
-                    ...achievementObj,
+                    ...translatedAchievement,
                     currentProgress: recentAchievement.currentProgress,
                     isCompleted: recentAchievement.isCompleted,
                     completedAt: recentAchievement.completedAt

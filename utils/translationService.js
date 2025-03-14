@@ -5,11 +5,24 @@ class TranslationService {
         this.cache = new Map();
         this.maxRetries = 3;
         this.retryDelay = 1000; // 1 second
+        this.languageCodeMap = {
+            'pa': 'pa', // Punjabi (use pa consistently)
+            'gu': 'gu', // Gujarati
+            'hi': 'hi', // Hindi
+            'bn': 'bn', // Bengali
+            'ta': 'ta', // Tamil
+            'ml': 'ml'  // Malayalam
+        };
     }
 
     async translateWithRetry(text, targetLang, retries = 0) {
         try {
-            const result = await translate(text, 'en', targetLang);
+            // Map the language code if necessary
+            const mappedLang = this.languageCodeMap[targetLang];
+            if (!mappedLang) {
+                throw new Error(`Unsupported language code: ${targetLang}`);
+            }
+            const result = await translate(text, 'en', mappedLang);
             return result.translation;
         } catch (error) {
             if (retries < this.maxRetries) {
