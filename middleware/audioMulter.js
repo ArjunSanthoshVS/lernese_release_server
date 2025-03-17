@@ -5,7 +5,7 @@ const fs = require('fs');
 // Configure storage for audio files
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadPath = '/public/uploads/audio';
+        const uploadPath = path.join(__dirname, '../public/uploads/audio');
         // Ensure directory exists
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
