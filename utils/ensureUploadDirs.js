@@ -3,10 +3,10 @@ const path = require('path');
 
 const ensureUploadDirs = () => {
     const dirs = [
-        '/public/uploads',
-        '/public/uploads/audio',
-        '/public/uploads/attachments',
-        '/public/uploads/recordings'
+        path.join(__dirname, '../public/uploads'),
+        path.join(__dirname, '../public/uploads/audio'),
+        path.join(__dirname, '../public/uploads/attachments'),
+        path.join(__dirname, '../public/uploads/recordings')
     ];
 
     dirs.forEach(dir => {
