@@ -5,8 +5,8 @@ const ensureUploadDirs = () => {
     const dirs = [
         path.join(__dirname, '../public/uploads'),
         path.join(__dirname, '../public/uploads/audio'),
-        path.join(__dirname, '../public/uploads/audio/voice'),
-        path.join(__dirname, '../public/uploads/attachments')
+        path.join(__dirname, '../public/uploads/attachments'),
+        path.join(__dirname, '../public/uploads/recordings')
     ];
 
     dirs.forEach(dir => {
