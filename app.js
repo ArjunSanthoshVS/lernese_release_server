@@ -59,7 +59,7 @@ app.use(express.urlencoded({ extended: true }));
 
 console.log(path.join(__dirname, 'public/uploads'));
 // Serve static files from public directory
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', express.static('/public/uploads'));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Routes
