@@ -2,8 +2,12 @@ const fs = require('fs');
 const path = require('path');
 
 const saveAudioFile = (base64Data, userId) => {
+    // Use Render's persistent storage in production, local path in development
+    const uploadsDir = process.env.ENV === 'production'
+        ? '/public/uploads/audio'
+        : path.join(__dirname, '../public/uploads/audio');
+
     // Create uploads directory if it doesn't exist
-    const uploadsDir = path.join(__dirname, '../public/uploads/audio');
     if (!fs.existsSync(uploadsDir)) {
         fs.mkdirSync(uploadsDir, { recursive: true, mode: 0o755 });
     }

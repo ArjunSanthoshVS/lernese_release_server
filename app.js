@@ -2,7 +2,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const helmet = require('helmet');
-const http = require('http');
 const config = require('./config/config');
 const adminRoutes = require('./routes/admin/admin.routes');
 const authRoutes = require('./routes/user/auth.routes');
@@ -24,15 +23,8 @@ const streakRoutes = require('./routes/user/streak.routes');
 
 const socketHandler = require('./socket/chat');
 const path = require('path');
-const fs = require('fs');
-// const ensureUploadDirs = require('./utils/ensureUploadDirs');
 
 const app = express();
-
-// Ensure upload directories exist
-// ensureUploadDirs();
-
-// Initialize Socket.IO with the server
 
 // Connect to MongoDB
 mongoose.connect(config.mongoUri)
@@ -57,9 +49,12 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-console.log(path.join(__dirname, 'public/uploads'));
 // Serve static files from public directory
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/uploads', express.static(
+    process.env.ENV === 'production'
+        ? '/public/uploads'
+        : path.join(__dirname, 'public/uploads')
+));
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Routes

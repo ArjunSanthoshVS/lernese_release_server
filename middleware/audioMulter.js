@@ -5,12 +5,16 @@ const fs = require('fs');
 // Configure storage for audio files
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        const uploadPath = path.join(__dirname, '../public/uploads/audio');
+        // Use Render's persistent storage in production, local path in development
+        const basePath = process.env.ENV === 'production' 
+            ? '/public/uploads/audio'
+            : path.join(__dirname, '../public/uploads/audio');
+            
         // Ensure directory exists
-        if (!fs.existsSync(uploadPath)) {
-            fs.mkdirSync(uploadPath, { recursive: true });
+        if (!fs.existsSync(basePath)) {
+            fs.mkdirSync(basePath, { recursive: true });
         }
-        cb(null, uploadPath);
+        cb(null, basePath);
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
