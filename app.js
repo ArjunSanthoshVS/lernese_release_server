@@ -25,12 +25,12 @@ const streakRoutes = require('./routes/user/streak.routes');
 const socketHandler = require('./socket/chat');
 const path = require('path');
 const fs = require('fs');
-const ensureUploadDirs = require('./utils/ensureUploadDirs');
+// const ensureUploadDirs = require('./utils/ensureUploadDirs');
 
 const app = express();
 
 // Ensure upload directories exist
-ensureUploadDirs();
+// ensureUploadDirs();
 
 // Initialize Socket.IO with the server
 
